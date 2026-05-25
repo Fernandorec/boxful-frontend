@@ -1,6 +1,6 @@
 'use client';
-import { Form, Input, Button, DatePicker, Select, InputNumber, Checkbox, message, ConfigProvider } from 'antd';
-import { useState } from 'react';
+import { Form, Input, Button, DatePicker, Select, Checkbox, message, ConfigProvider, Space } from 'antd';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { OrdenesService } from '@/services/ordenes.service';
 import locale from 'antd/locale/es_ES';
@@ -16,10 +16,43 @@ export default function PaginaNuevaOrden() {
   const [paquetes, setPaquetes] = useState([
     { contenido: '', pesoLibras: 0, ancho: 0, alto: 0, largo: 0 }
   ]);
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+  const guardado = localStorage.getItem('orden_borrador');
+  if (guardado) {
+    const datos = JSON.parse(guardado);
+    setDatosPaso1(datos);
+    if (datos.esCOD) setEsCOD(true);
+    const valores = { ...datos };
+    if (valores.fechaProgramada) {
+      valores.fechaProgramada = dayjs(valores.fechaProgramada);
+    }
+    form.setFieldsValue(valores);
+  }
+}, []);
+
+  useEffect(() => {
+    if (datosPaso1) {
+      localStorage.setItem('orden_borrador', JSON.stringify(datosPaso1));
+    }
+  }, [datosPaso1]);
 
   const alEnviarPaso1 = (valores: any) => {
-    setDatosPaso1(valores);
-    setPaso(2);
+  const datosAGuardar = {
+    ...valores,
+    fechaProgramada: valores.fechaProgramada?.format('YYYY-MM-DD'),
+  };
+  setDatosPaso1(datosAGuardar);
+  setEsCOD(valores.esCOD || false);
+  setPaso(2);
+};
+
+  const limpiarFormulario = () => {
+    form.resetFields();
+    setDatosPaso1(null);
+    setEsCOD(false);
+    localStorage.removeItem('orden_borrador');
   };
 
   const agregarPaquete = () => {
@@ -43,9 +76,17 @@ export default function PaginaNuevaOrden() {
     const camposNumericos = ['largo', 'alto', 'ancho', 'pesoLibras'];
     if (camposNumericos.includes(campo)) {
       if (valor === null || valor === undefined || valor === '') {
-        nuevosErrores[index][campo] = 'Ingresa una cantidad válida';
+        nuevosErrores[index][campo] = 'Requerido';
       } else if (valor < 0) {
         nuevosErrores[index][campo] = 'Ingresa una cantidad válida';
+      } else if (['largo', 'alto', 'ancho'].includes(campo) && valor < 50) {
+        nuevosErrores[index][campo] = 'El mínimo es 50 cm';
+      } else if (['largo', 'alto', 'ancho'].includes(campo) && valor > 10000) {
+        nuevosErrores[index][campo] = 'El máximo es 10,000 cm';
+      } else if (campo === 'pesoLibras' && valor < 50) {
+        nuevosErrores[index][campo] = 'El mínimo es 50 lbs';
+      } else if (campo === 'pesoLibras' && valor > 10000) {
+        nuevosErrores[index][campo] = 'El máximo es 10,000 lbs';
       } else {
         nuevosErrores[index][campo] = '';
       }
@@ -54,46 +95,71 @@ export default function PaginaNuevaOrden() {
   };
 
   const alEnviarPaso2 = async () => {
-    setIntentoEnviar(true);
+  setIntentoEnviar(true);
 
-    const hayErrores = erroresPaquetes.some(e =>
-      e.largo || e.alto || e.ancho || e.pesoLibras
-    );
+  const nuevosErrores = paquetes.map((p) => {
+    const errores: any = {};
 
-    if (hayErrores) {
-      message.error('Corrige los errores antes de continuar');
-      return;
-    }
+    if (!p.largo) errores.largo = 'Requerido';
+    else if (p.largo < 50) errores.largo = 'El mínimo es 50 cm';
+    else if (p.largo > 10000) errores.largo = 'El máximo es 10,000 cm';
 
-    const hayVacios = paquetes.some(p => !p.contenido);
-    if (hayVacios) {
-      message.error('Todos los paquetes deben tener una descripción de contenido');
-      return;
-    }
+    if (!p.alto) errores.alto = 'Requerido';
+    else if (p.alto < 50) errores.alto = 'El mínimo es 50 cm';
+    else if (p.alto > 10000) errores.alto = 'El máximo es 10,000 cm';
 
-    try {
-      await OrdenesService.crear({
-        direccionRecoleccion: datosPaso1.direccionRecoleccion,
-        fechaProgramada: datosPaso1.fechaProgramada?.format('YYYY-MM-DD'),
-        nombreDestinatario: datosPaso1.nombreDestinatario,
-        apellidoDestinatario: datosPaso1.apellidoDestinatario,
-        correoDestinatario: datosPaso1.correoDestinatario,
-        telefonoDestinatario: `${datosPaso1.codigoTelefono || '503'}${datosPaso1.telefonoDestinatario}`,
-        direccionDestinatario: datosPaso1.direccionDestinatario,
-        departamento: datosPaso1.departamento,
-        municipio: datosPaso1.municipio,
-        referencia: datosPaso1.referencia,
-        indicaciones: datosPaso1.indicaciones,
-        esCOD,
-        montoEsperado: datosPaso1.montoEsperado,
-        paquetes,
-      });
-      message.success('Orden creada exitosamente');
-      router.push('/ordenes');
-    } catch (error: any) {
-      message.error('Error al crear la orden');
-    }
-  };
+    if (!p.ancho) errores.ancho = 'Requerido';
+    else if (p.ancho < 50) errores.ancho = 'El mínimo es 50 cm';
+    else if (p.ancho > 10000) errores.ancho = 'El máximo es 10,000 cm';
+
+    if (!p.pesoLibras) errores.pesoLibras = 'Requerido';
+    else if (p.pesoLibras < 50) errores.pesoLibras = 'El mínimo es 50 lbs';
+    else if (p.pesoLibras > 10000) errores.pesoLibras = 'El máximo es 10,000 lbs';
+
+    return errores;
+  });
+
+  setErroresPaquetes(nuevosErrores);
+
+  const hayErrores = nuevosErrores.some(e =>
+    e.largo || e.alto || e.ancho || e.pesoLibras
+  );
+
+  if (hayErrores) {
+    message.error('Completa todos los campos de los paquetes correctamente');
+    return;
+  }
+
+  const hayVacios = paquetes.some(p => !p.contenido);
+  if (hayVacios) {
+    message.error('Todos los paquetes deben tener una descripción de contenido');
+    return;
+  }
+
+  try {
+    await OrdenesService.crear({
+      direccionRecoleccion: datosPaso1.direccionRecoleccion,
+      fechaProgramada: datosPaso1.fechaProgramada,
+      nombreDestinatario: datosPaso1.nombreDestinatario,
+      apellidoDestinatario: datosPaso1.apellidoDestinatario,
+      correoDestinatario: datosPaso1.correoDestinatario,
+      telefonoDestinatario: `${datosPaso1.codigoTelefono || '503'}${datosPaso1.telefonoDestinatario}`,
+      direccionDestinatario: datosPaso1.direccionDestinatario,
+      departamento: datosPaso1.departamento,
+      municipio: datosPaso1.municipio,
+      referencia: datosPaso1.referencia,
+      indicaciones: datosPaso1.indicaciones,
+      esCOD,
+      montoEsperado: datosPaso1.montoEsperado,
+      paquetes,
+    });
+    message.success('Orden creada exitosamente');
+    localStorage.removeItem('orden_borrador');
+    router.push('/ordenes');
+  } catch (error: any) {
+    message.error('Error al crear la orden');
+  }
+};
 
   const departamentos = [
     'San Salvador', 'Santa Ana', 'San Miguel', 'La Libertad',
@@ -107,8 +173,14 @@ export default function PaginaNuevaOrden() {
   };
 
   const soloNumeros = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const permitidos = /[0-9.]/;
-    if (!permitidos.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
+    if (
+      !/[0-9.]/.test(e.key) &&
+      e.key !== 'Backspace' &&
+      e.key !== 'Delete' &&
+      e.key !== 'Tab' &&
+      e.key !== 'ArrowLeft' &&
+      e.key !== 'ArrowRight'
+    ) {
       e.preventDefault();
     }
   };
@@ -131,17 +203,13 @@ export default function PaginaNuevaOrden() {
           .orden-page .ant-input,
           .orden-page .ant-input-affix-wrapper,
           .orden-page .ant-picker,
-          .orden-page .ant-select-selector,
-          .orden-page .ant-input-number {
+          .orden-page .ant-select-selector {
             height: 40px !important;
             min-height: 40px !important;
             border-radius: 8px !important;
             font-size: 14px !important;
             display: flex !important;
             align-items: center !important;
-          }
-          .orden-page .ant-input-number-input {
-            height: 38px !important;
           }
           .orden-page .ant-select-selector {
             align-items: center !important;
@@ -154,16 +222,16 @@ export default function PaginaNuevaOrden() {
             stroke-width: 55 !important;
             fill: #050817 !important;
           }
-          .orden-page .ant-input-group-compact {
+          .orden-page .ant-space-compact {
             display: flex !important;
-            height: 40px !important;
+            width: 100% !important;
           }
-          .orden-page .ant-input-group-compact .ant-select .ant-select-selector {
+          .orden-page .ant-space-compact .ant-select .ant-select-selector {
             border-radius: 8px 0 0 8px !important;
             height: 40px !important;
             background: #f5f5f5 !important;
           }
-          .orden-page .ant-input-group-compact .ant-input {
+          .orden-page .ant-space-compact .ant-input {
             border-radius: 0 8px 8px 0 !important;
             height: 40px !important;
           }
@@ -228,7 +296,12 @@ export default function PaginaNuevaOrden() {
               <h2 style={{ fontSize: 15, fontWeight: 700, color: '#050817', marginBottom: 20 }}>
                 Completa los datos
               </h2>
-              <Form layout="vertical" onFinish={alEnviarPaso1}>
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={alEnviarPaso1}
+                initialValues={datosPaso1 || {}}
+              >
                 <div
                   className="paso1-grid"
                   style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}
@@ -278,7 +351,7 @@ export default function PaginaNuevaOrden() {
                   </Form.Item>
 
                   <Form.Item label="Teléfono">
-                    <Input.Group compact style={{ display: 'flex', height: 40 }}>
+                    <Space.Compact style={{ display: 'flex', width: '100%' }}>
                       <Form.Item name="codigoTelefono" noStyle initialValue="503">
                         <Select
                           style={{ width: 85, height: 40 }}
@@ -295,12 +368,12 @@ export default function PaginaNuevaOrden() {
                         rules={[{ required: true, message: 'Requerido' }]}
                       >
                         <Input
-                          style={{ flex: 1, height: 40, borderRadius: '0 8px 8px 0' }}
+                          style={{ flex: 1, height: 40 }}
                           placeholder="7777 7777"
                           onKeyDown={soloNumeros}
                         />
                       </Form.Item>
-                    </Input.Group>
+                    </Space.Compact>
                   </Form.Item>
 
                   <Form.Item
@@ -357,27 +430,60 @@ export default function PaginaNuevaOrden() {
                         { required: true, message: 'Ingresa un monto' },
                         {
                           validator: (_, value) => {
-                            if (!value) return Promise.reject('Ingresa un monto');
-                            if (parseFloat(value) < 0) return Promise.reject('Ingresa una cantidad válida');
+                            if (!value || value === '') return Promise.reject('Ingresa un monto');
+                            if (parseFloat(value) <= 0) return Promise.reject('El monto debe ser mayor a 0');
+                            if (parseFloat(value) > 99999) return Promise.reject('El monto no puede superar $99,999');
                             return Promise.resolve();
                           }
                         }
                       ]}
+                      normalize={(value) => {
+                        if (!value) return value;
+                        let val = value.replace(/[^0-9.]/g, '');
+                        if (val.startsWith('.')) val = '';
+                        const partes = val.split('.');
+                        if (partes.length > 2) val = partes[0] + '.' + partes[1];
+                        if (partes.length === 2) val = partes[0] + '.' + partes[1].slice(0, 2);
+                        return val;
+                      }}
                     >
                       <Input
                         prefix="$"
                         placeholder="0.00"
                         style={{ height: 40 }}
-                        onKeyDown={soloNumeros}
-                        onChange={(e) => {
-                          e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+                        onKeyDown={(e) => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            e.key !== 'Backspace' &&
+                            e.key !== 'Delete' &&
+                            e.key !== 'Tab' &&
+                            e.key !== 'ArrowLeft' &&
+                            e.key !== 'ArrowRight' &&
+                            !(e.key === '.' && !(e.currentTarget.value.includes('.')))
+                          ) {
+                            e.preventDefault();
+                          }
                         }}
                       />
                     </Form.Item>
                   )}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+                  <Button
+                    onClick={limpiarFormulario}
+                    style={{
+                      height: 44,
+                      paddingInline: 24,
+                      fontWeight: 600,
+                      borderRadius: 8,
+                      background: '#FF4B00',
+                      borderColor: '#FF4B00',
+                      color: 'white',
+                    }}
+                  >
+                    Limpiar datos
+                  </Button>
                   <Button
                     type="primary"
                     htmlType="submit"
@@ -388,8 +494,6 @@ export default function PaginaNuevaOrden() {
                       paddingInline: 32,
                       fontWeight: 600,
                       borderRadius: 8,
-                      width: '100%',
-                      maxWidth: 200,
                     }}
                   >
                     Siguiente →
@@ -401,9 +505,26 @@ export default function PaginaNuevaOrden() {
 
           {paso === 2 && (
             <>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: '#050817', marginBottom: 20 }}>
-                Agrega tus productos
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                <button
+                  onClick={() => setPaso(1)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: 20,
+                    color: '#050817',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: 0,
+                  }}
+                >
+                  ←
+                </button>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: '#050817', margin: 0 }}>
+                  Agrega tus productos
+                </h2>
+              </div>
 
               <div style={{ marginBottom: 12 }}>
                 <div className="paquete-headers">
@@ -416,52 +537,68 @@ export default function PaginaNuevaOrden() {
                   <div key={index} className="paquete-card">
                     <div className="paquete-grid">
                       <div>
-                        <InputNumber
-                          value={paquete.largo}
-                          onChange={(v) => actualizarPaquete(index, 'largo', v)}
+                        <Input
+                          value={paquete.largo || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            actualizarPaquete(index, 'largo', val === '' ? null : parseFloat(val));
+                          }}
+                          onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
-                          addonAfter="cm"
+                          suffix="cm"
+                          placeholder="mín. 50"
                           status={erroresPaquetes[index]?.largo ? 'error' : ''}
-                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
                         {erroresPaquetes[index]?.largo && (
                           <span className="campo-error">{erroresPaquetes[index].largo}</span>
                         )}
                       </div>
                       <div>
-                        <InputNumber
-                          value={paquete.alto}
-                          onChange={(v) => actualizarPaquete(index, 'alto', v)}
+                        <Input
+                          value={paquete.alto || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            actualizarPaquete(index, 'alto', val === '' ? null : parseFloat(val));
+                          }}
+                          onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
-                          addonAfter="cm"
+                          suffix="cm"
+                          placeholder="mín. 50"
                           status={erroresPaquetes[index]?.alto ? 'error' : ''}
-                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
                         {erroresPaquetes[index]?.alto && (
                           <span className="campo-error">{erroresPaquetes[index].alto}</span>
                         )}
                       </div>
                       <div>
-                        <InputNumber
-                          value={paquete.ancho}
-                          onChange={(v) => actualizarPaquete(index, 'ancho', v)}
+                        <Input
+                          value={paquete.ancho || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            actualizarPaquete(index, 'ancho', val === '' ? null : parseFloat(val));
+                          }}
+                          onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
-                          addonAfter="cm"
+                          suffix="cm"
+                          placeholder="mín. 50"
                           status={erroresPaquetes[index]?.ancho ? 'error' : ''}
-                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
                         {erroresPaquetes[index]?.ancho && (
                           <span className="campo-error">{erroresPaquetes[index].ancho}</span>
                         )}
                       </div>
                       <div>
-                        <InputNumber
-                          value={paquete.pesoLibras}
-                          onChange={(v) => actualizarPaquete(index, 'pesoLibras', v)}
+                        <Input
+                          value={paquete.pesoLibras || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            actualizarPaquete(index, 'pesoLibras', val === '' ? null : parseFloat(val));
+                          }}
+                          onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
-                          addonAfter="lbs"
+                          suffix="lbs"
+                          placeholder="mín. 50"
                           status={erroresPaquetes[index]?.pesoLibras ? 'error' : ''}
-                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
                         {erroresPaquetes[index]?.pesoLibras && (
                           <span className="campo-error">{erroresPaquetes[index].pesoLibras}</span>
@@ -522,14 +659,8 @@ export default function PaginaNuevaOrden() {
 
               <div
                 className="botones-paso"
-                style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16, gap: 12 }}
+                style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16, gap: 12 }}
               >
-                <Button
-                  onClick={() => setPaso(1)}
-                  style={{ height: 44, paddingInline: 32, borderRadius: 8, flex: 1, maxWidth: 200 }}
-                >
-                  ← Regresar
-                </Button>
                 <Button
                   type="primary"
                   onClick={alEnviarPaso2}
@@ -540,8 +671,6 @@ export default function PaginaNuevaOrden() {
                     paddingInline: 32,
                     fontWeight: 600,
                     borderRadius: 8,
-                    flex: 1,
-                    maxWidth: 200,
                   }}
                 >
                   Enviar →

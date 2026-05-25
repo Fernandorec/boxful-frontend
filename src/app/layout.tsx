@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AntdRegistry from './AntdRegistry';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,9 +13,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Boxful',
   description: 'Envíos ultra-rápidos para LatAm',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -23,8 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>{children}</body>
+    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
+        <AntdRegistry>
+          {children}
+        </AntdRegistry>
+      </body>
     </html>
   );
 }

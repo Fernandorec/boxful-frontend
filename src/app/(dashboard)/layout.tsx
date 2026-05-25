@@ -2,13 +2,18 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { AuthService } from '@/services/auth.service';
 import { Dropdown } from 'antd';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const usuario = AuthService.obtenerUsuario();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [nombreUsuario, setNombreUsuario] = useState('');
+
+  useEffect(() => {
+    const u = AuthService.obtenerUsuario();
+    setNombreUsuario(u?.nombre || 'Usuario');
+  }, []);
 
   const menuItems = [
     {
@@ -99,8 +104,8 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              background: pathname === '/ordenes/nueva' ? '#3D52D5' : 'transparent',
-              color: pathname === '/ordenes/nueva' ? 'white' : '#050817',
+              background: pathname === '/ordenes' ? 'transparent' : '#3D52D5',
+              color: pathname === '/ordenes' ? '#050817' : 'white',
               border: 'none',
               borderRadius: 8,
               padding: '10px 16px',
@@ -163,7 +168,7 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
                 marginLeft: 'auto',
               }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#050817' }}>
-                  {usuario?.nombre || 'Usuario'}
+                  {nombreUsuario}
                 </span>
                 <span style={{ color: '#9ca3af', fontSize: 12 }}>▾</span>
               </div>

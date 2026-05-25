@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/cssinjs": "^2.1.2",
     "@ant-design/icons": "^6.2.3",
     "@types/js-cookie": "^3.0.6",
     "antd": "^6.4.3",
