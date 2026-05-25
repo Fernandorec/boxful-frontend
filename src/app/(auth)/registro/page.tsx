@@ -1,7 +1,7 @@
 'use client';
 import { Form, Input, Button, Select, DatePicker, message, Modal } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthService } from '@/services/auth.service';
 
 export default function PaginaRegistro() {
@@ -10,6 +10,19 @@ export default function PaginaRegistro() {
   const [modalVisible, setModalVisible] = useState(false);
   const [telefono, setTelefono] = useState('');
   const [codigoTelefono, setCodigoTelefono] = useState('503');
+
+  useEffect(() => {
+    const guardado = localStorage.getItem('registro_borrador');
+    if (guardado) {
+      const datos = JSON.parse(guardado);
+      form.setFieldsValue(datos);
+    }
+  }, []);
+
+  const alCambiar = () => {
+    const valores = form.getFieldsValue();
+    localStorage.setItem('registro_borrador', JSON.stringify(valores));
+  };
 
   const alEnviar = async (valores: any) => {
     setTelefono(valores.telefono);
@@ -30,6 +43,7 @@ export default function PaginaRegistro() {
         codigoTelefono: valores.codigoTelefono || '503',
         contrasena: valores.contrasena,
       });
+      localStorage.removeItem('registro_borrador');
       message.success('Cuenta creada exitosamente');
       router.push('/ordenes');
     } catch (error: any) {
@@ -155,7 +169,7 @@ export default function PaginaRegistro() {
               Completa la información de registro
             </p>
 
-            <Form form={form} layout="vertical" onFinish={alEnviar}>
+            <Form form={form} layout="vertical" onFinish={alEnviar} onValuesChange={alCambiar}>
               <div
                 className="registro-grid"
                 style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 16, rowGap: 0 }}

@@ -1,13 +1,11 @@
 'use client';
 import { Table, Button, DatePicker, Tag, message } from 'antd';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { OrdenesService } from '@/services/ordenes.service';
 
 const { RangePicker } = DatePicker;
 
 export default function PaginaHistorial() {
-  const router = useRouter();
   const [ordenes, setOrdenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [fechas, setFechas] = useState<any>(null);
@@ -38,11 +36,11 @@ export default function PaginaHistorial() {
   };
 
   const exportarCSV = () => {
-    const cabecera = 'No. Orden,Nombre,Apellidos,Departamento,Municipio,Paquetes,Estado\n';
+    const cabecera = 'No. Orden,Nombre,Apellidos,Departamento,Municipio,Dirección,Teléfono,Fecha Programada,Paquetes,Estado,Tipo,Monto Esperado\n';
     const filas = ordenes.map((o: any) =>
-      `${o.orderNumber},${o.recipientFirstName},${o.recipientLastName},${o.department},${o.municipality},${o.packages?.length},${o.status}`
+      `${o.orderNumber},${o.recipientFirstName},${o.recipientLastName},${o.department},${o.municipality},"${o.recipientAddress}",${o.recipientPhone},${o.scheduledDate ? new Date(o.scheduledDate).toLocaleDateString('es-SV') : ''},${o.packages?.length},${o.status},${o.isCOD ? 'COD' : 'Estándar'},${o.expectedAmount ?? ''}`
     ).join('\n');
-    const blob = new Blob([cabecera + filas], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\ufeff' + cabecera + filas], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -151,7 +149,6 @@ export default function PaginaHistorial() {
           </h1>
         </div>
 
-        {/* Filtros */}
         <div
           className="historial-filtros"
           style={{
@@ -194,7 +191,6 @@ export default function PaginaHistorial() {
           </Button>
         </div>
 
-        {/* Tabla */}
         <div style={{
           background: 'white',
           borderRadius: 12,

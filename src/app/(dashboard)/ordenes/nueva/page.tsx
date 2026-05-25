@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { OrdenesService } from '@/services/ordenes.service';
 import locale from 'antd/locale/es_ES';
+import dayjs from 'dayjs';
 
 export default function PaginaNuevaOrden() {
   const router = useRouter();
   const [paso, setPaso] = useState(1);
   const [datosPaso1, setDatosPaso1] = useState<any>(null);
   const [esCOD, setEsCOD] = useState(false);
+  const [intentoEnviar, setIntentoEnviar] = useState(false);
+  const [erroresPaquetes, setErroresPaquetes] = useState<any[]>([{}]);
   const [paquetes, setPaquetes] = useState([
     { contenido: '', pesoLibras: 0, ancho: 0, alto: 0, largo: 0 }
   ]);
@@ -21,19 +24,53 @@ export default function PaginaNuevaOrden() {
 
   const agregarPaquete = () => {
     setPaquetes([...paquetes, { contenido: '', pesoLibras: 0, ancho: 0, alto: 0, largo: 0 }]);
+    setErroresPaquetes([...erroresPaquetes, {}]);
   };
 
   const eliminarPaquete = (index: number) => {
     setPaquetes(paquetes.filter((_, i) => i !== index));
+    setErroresPaquetes(erroresPaquetes.filter((_, i) => i !== index));
   };
 
   const actualizarPaquete = (index: number, campo: string, valor: any) => {
     const nuevos = [...paquetes];
     nuevos[index] = { ...nuevos[index], [campo]: valor };
     setPaquetes(nuevos);
+
+    const nuevosErrores = [...erroresPaquetes];
+    if (!nuevosErrores[index]) nuevosErrores[index] = {};
+
+    const camposNumericos = ['largo', 'alto', 'ancho', 'pesoLibras'];
+    if (camposNumericos.includes(campo)) {
+      if (valor === null || valor === undefined || valor === '') {
+        nuevosErrores[index][campo] = 'Ingresa una cantidad válida';
+      } else if (valor < 0) {
+        nuevosErrores[index][campo] = 'Ingresa una cantidad válida';
+      } else {
+        nuevosErrores[index][campo] = '';
+      }
+    }
+    setErroresPaquetes(nuevosErrores);
   };
 
   const alEnviarPaso2 = async () => {
+    setIntentoEnviar(true);
+
+    const hayErrores = erroresPaquetes.some(e =>
+      e.largo || e.alto || e.ancho || e.pesoLibras
+    );
+
+    if (hayErrores) {
+      message.error('Corrige los errores antes de continuar');
+      return;
+    }
+
+    const hayVacios = paquetes.some(p => !p.contenido);
+    if (hayVacios) {
+      message.error('Todos los paquetes deben tener una descripción de contenido');
+      return;
+    }
+
     try {
       await OrdenesService.crear({
         direccionRecoleccion: datosPaso1.direccionRecoleccion,
@@ -64,6 +101,17 @@ export default function PaginaNuevaOrden() {
     'Chalatenango', 'Cuscatlán', 'La Unión', 'Morazán',
     'Cabañas', 'Ahuachapán',
   ];
+
+  const diasAnterioresDeshabilitados = (current: any) => {
+    return current && current.isBefore(dayjs().startOf('day'));
+  };
+
+  const soloNumeros = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const permitidos = /[0-9.]/;
+    if (!permitidos.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
+      e.preventDefault();
+    }
+  };
 
   return (
     <ConfigProvider locale={locale}>
@@ -119,6 +167,12 @@ export default function PaginaNuevaOrden() {
             border-radius: 0 8px 8px 0 !important;
             height: 40px !important;
           }
+          .campo-error {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 3px;
+            display: block;
+          }
           .paquete-card {
             background: white;
             border: 1px solid #f0f0f0;
@@ -130,7 +184,7 @@ export default function PaginaNuevaOrden() {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
             gap: 12px;
-            align-items: end;
+            align-items: start;
           }
           .paquete-headers {
             display: grid;
@@ -193,7 +247,10 @@ export default function PaginaNuevaOrden() {
                     label="Fecha programada"
                     rules={[{ required: true, message: 'Requerido' }]}
                   >
-                    <DatePicker style={{ width: '100%', height: 40 }} />
+                    <DatePicker
+                      style={{ width: '100%', height: 40 }}
+                      disabledDate={diasAnterioresDeshabilitados}
+                    />
                   </Form.Item>
 
                   <Form.Item
@@ -220,7 +277,7 @@ export default function PaginaNuevaOrden() {
                     <Input placeholder="correo@ejemplo.com" />
                   </Form.Item>
 
-                  <Form.Item label="Teléfono" rules={[{ required: true, message: 'Requerido' }]}>
+                  <Form.Item label="Teléfono">
                     <Input.Group compact style={{ display: 'flex', height: 40 }}>
                       <Form.Item name="codigoTelefono" noStyle initialValue="503">
                         <Select
@@ -240,6 +297,7 @@ export default function PaginaNuevaOrden() {
                         <Input
                           style={{ flex: 1, height: 40, borderRadius: '0 8px 8px 0' }}
                           placeholder="7777 7777"
+                          onKeyDown={soloNumeros}
                         />
                       </Form.Item>
                     </Input.Group>
@@ -292,11 +350,28 @@ export default function PaginaNuevaOrden() {
                   </Form.Item>
 
                   {esCOD && (
-                    <Form.Item name="montoEsperado" label="Monto esperado (USD)">
-                      <InputNumber
-                        min={0}
+                    <Form.Item
+                      name="montoEsperado"
+                      label="Monto esperado (USD)"
+                      rules={[
+                        { required: true, message: 'Ingresa un monto' },
+                        {
+                          validator: (_, value) => {
+                            if (!value) return Promise.reject('Ingresa un monto');
+                            if (parseFloat(value) < 0) return Promise.reject('Ingresa una cantidad válida');
+                            return Promise.resolve();
+                          }
+                        }
+                      ]}
+                    >
+                      <Input
                         prefix="$"
-                        style={{ width: '100%', height: 40 }}
+                        placeholder="0.00"
+                        style={{ height: 40 }}
+                        onKeyDown={soloNumeros}
+                        onChange={(e) => {
+                          e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+                        }}
                       />
                     </Form.Item>
                   )}
@@ -342,62 +417,85 @@ export default function PaginaNuevaOrden() {
                     <div className="paquete-grid">
                       <div>
                         <InputNumber
-                          min={0}
                           value={paquete.largo}
                           onChange={(v) => actualizarPaquete(index, 'largo', v)}
                           style={{ width: '100%' }}
                           addonAfter="cm"
+                          status={erroresPaquetes[index]?.largo ? 'error' : ''}
+                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
+                        {erroresPaquetes[index]?.largo && (
+                          <span className="campo-error">{erroresPaquetes[index].largo}</span>
+                        )}
                       </div>
                       <div>
                         <InputNumber
-                          min={0}
                           value={paquete.alto}
                           onChange={(v) => actualizarPaquete(index, 'alto', v)}
                           style={{ width: '100%' }}
                           addonAfter="cm"
+                          status={erroresPaquetes[index]?.alto ? 'error' : ''}
+                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
+                        {erroresPaquetes[index]?.alto && (
+                          <span className="campo-error">{erroresPaquetes[index].alto}</span>
+                        )}
                       </div>
                       <div>
                         <InputNumber
-                          min={0}
                           value={paquete.ancho}
                           onChange={(v) => actualizarPaquete(index, 'ancho', v)}
                           style={{ width: '100%' }}
                           addonAfter="cm"
+                          status={erroresPaquetes[index]?.ancho ? 'error' : ''}
+                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
+                        {erroresPaquetes[index]?.ancho && (
+                          <span className="campo-error">{erroresPaquetes[index].ancho}</span>
+                        )}
                       </div>
                       <div>
                         <InputNumber
-                          min={0}
                           value={paquete.pesoLibras}
                           onChange={(v) => actualizarPaquete(index, 'pesoLibras', v)}
                           style={{ width: '100%' }}
                           addonAfter="lbs"
+                          status={erroresPaquetes[index]?.pesoLibras ? 'error' : ''}
+                          parser={(value) => value ? parseFloat(value.replace(/[^\d.]/g, '')) : (null as any)}
                         />
+                        {erroresPaquetes[index]?.pesoLibras && (
+                          <span className="campo-error">{erroresPaquetes[index].pesoLibras}</span>
+                        )}
                       </div>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <Input
-                          value={paquete.contenido}
-                          onChange={(e) => actualizarPaquete(index, 'contenido', e.target.value)}
-                          placeholder="Ej. iPhone 14 Pro Max"
-                          style={{ flex: 1 }}
-                        />
-                        {paquetes.length > 1 && (
-                          <button
-                            onClick={() => eliminarPaquete(index)}
-                            style={{
-                              background: '#fee2e2',
-                              border: 'none',
-                              borderRadius: 6,
-                              padding: '6px 10px',
-                              cursor: 'pointer',
-                              color: '#ef4444',
-                              fontWeight: 700,
-                            }}
-                          >
-                            ✕
-                          </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <Input
+                            value={paquete.contenido}
+                            onChange={(e) => actualizarPaquete(index, 'contenido', e.target.value)}
+                            placeholder="Ej. iPhone 14 Pro Max"
+                            style={{ flex: 1 }}
+                            status={intentoEnviar && !paquete.contenido ? 'error' : ''}
+                          />
+                          {paquetes.length > 1 && (
+                            <button
+                              onClick={() => eliminarPaquete(index)}
+                              style={{
+                                background: '#fee2e2',
+                                border: 'none',
+                                borderRadius: 6,
+                                padding: '6px 10px',
+                                cursor: 'pointer',
+                                color: '#ef4444',
+                                fontWeight: 700,
+                                flexShrink: 0,
+                              }}
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                        {intentoEnviar && !paquete.contenido && (
+                          <span className="campo-error">Ingresa el contenido del paquete</span>
                         )}
                       </div>
                     </div>

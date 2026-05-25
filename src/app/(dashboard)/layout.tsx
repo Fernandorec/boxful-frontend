@@ -1,11 +1,12 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { AuthService } from '@/services/auth.service';
 import { Dropdown } from 'antd';
 import { useState } from 'react';
 
 export default function LayoutDashboard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const usuario = AuthService.obtenerUsuario();
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -78,7 +79,6 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
 
       <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
-        {/* Overlay móvil */}
         {menuAbierto && (
           <div className="sidebar-overlay" onClick={() => setMenuAbierto(false)} />
         )}
@@ -89,7 +89,7 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
             <img src="/logo.png" alt="Boxful" style={{ width: 120, height: 'auto' }} />
           </div>
 
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#050817', letterSpacing: '0.08em', paddingLeft: 8, marginBottom: 20 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#050817', letterSpacing: '0.08em', paddingLeft: 8, marginBottom: 16 }}>
             MENÚ
           </p>
 
@@ -99,8 +99,8 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              background: '#3D52D5',
-              color: 'white',
+              background: pathname === '/ordenes/nueva' ? '#3D52D5' : 'transparent',
+              color: pathname === '/ordenes/nueva' ? 'white' : '#050817',
               border: 'none',
               borderRadius: 8,
               padding: '10px 16px',
@@ -120,8 +120,8 @@ export default function LayoutDashboard({ children }: { children: React.ReactNod
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              background: 'transparent',
-              color: '#050817',
+              background: pathname === '/ordenes' ? '#3D52D5' : 'transparent',
+              color: pathname === '/ordenes' ? 'white' : '#050817',
               border: 'none',
               borderRadius: 8,
               padding: '10px 16px',
