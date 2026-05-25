@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Boxful Frontend
 
-## Getting Started
+Frontend de la aplicación Boxful — envíos ultra-rápidos para LatAm.
 
-First, run the development server:
+## Tecnologías
+- Next.js 16
+- React
+- Ant Design
+- Axios
+- TypeScript
+
+## Requisitos
+- Node.js 18+
+- Backend de Boxful corriendo en http://localhost:3001
+
+## Instalación
+
+1. Clona el repositorio:
+
+```bash
+git clone https://github.com/Fernandorec/boxful-frontend.git
+cd boxful-frontend
+```
+
+2. Instala las dependencias:
+
+```bash
+npm install
+```
+
+3. Crea el archivo `.env.local` en la raíz con estas variables:
+   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+
+4. Inicia el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La aplicación corre en `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vistas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Ruta | Descripción |
+|------|-------------|
+| /login | Inicio de sesión |
+| /registro | Registro de usuario |
+| /ordenes | Historial de órdenes |
+| /ordenes/nueva | Crear nueva orden |
 
-## Learn More
+## Funcionalidades
+- Registro e inicio de sesión con JWT
+- Crear órdenes con múltiples paquetes
+- Historial de órdenes con filtros por fecha
+- Exportar órdenes a CSV
+- Soporte para órdenes COD (cobro contra entrega)
+- Diseño responsive para móvil y desktop
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Esfuerzos extra
+- Middleware de protección de rutas
+- Dropdown de cierre de sesión
+- Confirmación de número de teléfono al registrarse
+- Selector de código de país en WhatsApp
