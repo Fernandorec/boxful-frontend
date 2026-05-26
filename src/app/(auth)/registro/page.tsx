@@ -1,9 +1,14 @@
 'use client';
-import { Form, Input, Button, Select, DatePicker, message, Modal, Space } from 'antd';
+import { Form, Input, Button, Select, message, Modal, Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AuthService } from '@/services/auth.service';
-import dayjs from 'dayjs';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { registerLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
+
+registerLocale('es', es);
 
 export default function PaginaRegistro() {
   const router = useRouter();
@@ -11,12 +16,16 @@ export default function PaginaRegistro() {
   const [modalVisible, setModalVisible] = useState(false);
   const [telefono, setTelefono] = useState('');
   const [codigoTelefono, setCodigoTelefono] = useState('503');
+  const [fechaNacimiento, setFechaNacimiento] = useState<Date | null>(null);
 
   useEffect(() => {
     const guardado = localStorage.getItem('registro_borrador');
     if (guardado) {
       const datos = JSON.parse(guardado);
       form.setFieldsValue(datos);
+      if (datos.fechaNacimiento) {
+        setFechaNacimiento(new Date(datos.fechaNacimiento));
+      }
     }
   }, []);
 
@@ -26,6 +35,10 @@ export default function PaginaRegistro() {
   };
 
   const alEnviar = async (valores: any) => {
+    if (!fechaNacimiento) {
+      form.setFields([{ name: 'fechaNacimiento', errors: ['Requerido'] }]);
+      return;
+    }
     setTelefono(valores.telefono);
     setCodigoTelefono(valores.codigoTelefono || '503');
     setModalVisible(true);
@@ -38,7 +51,7 @@ export default function PaginaRegistro() {
         nombre: valores.nombre,
         apellido: valores.apellido,
         sexo: valores.sexo,
-        fechaNacimiento: valores.fechaNacimiento?.format('YYYY-MM-DD'),
+        fechaNacimiento: fechaNacimiento?.toISOString().split('T')[0],
         correo: valores.correo,
         telefono: valores.telefono,
         codigoTelefono: valores.codigoTelefono || '503',
@@ -52,6 +65,19 @@ export default function PaginaRegistro() {
     } finally {
       setModalVisible(false);
     }
+  };
+
+  const calcularEdad = (fechaNac: Date) => {
+    const hoy = new Date();
+    const edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mes = hoy.getMonth() - fechaNac.getMonth();
+    return mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate()) ? edad - 1 : edad;
+  };
+
+  const fechaMaxima = () => {
+    const fecha = new Date();
+    fecha.setFullYear(fecha.getFullYear() - 18);
+    return fecha;
   };
 
   return (
@@ -81,7 +107,6 @@ export default function PaginaRegistro() {
 
         .registro-page .ant-input,
         .registro-page .ant-input-affix-wrapper,
-        .registro-page .ant-picker,
         .registro-page .ant-select-selector {
           height: 40px !important;
           min-height: 40px !important;
@@ -130,6 +155,109 @@ export default function PaginaRegistro() {
           height: 40px !important;
         }
 
+        .fecha-picker-wrapper {
+          width: 100%;
+        }
+
+        .fecha-picker-wrapper .react-datepicker-wrapper {
+          width: 100%;
+        }
+
+        .fecha-picker-wrapper .react-datepicker__input-container input {
+          width: 100%;
+          height: 40px;
+          border: 1px solid #d9d9d9;
+          border-radius: 8px;
+          padding: 0 14px;
+          font-size: 14px;
+          color: #050817;
+          outline: none;
+          background: white;
+          cursor: pointer;
+          transition: border-color 0.2s;
+          font-family: 'Mona Sans', sans-serif !important;
+        }
+
+        .fecha-picker-wrapper .react-datepicker__input-container input:hover {
+          border-color: #b0b0b0;
+        }
+
+        .fecha-picker-wrapper .react-datepicker__input-container input:focus {
+          border-color: #050817;
+          box-shadow: 0 0 0 2px rgba(5, 8, 23, 0.08);
+        }
+
+        .react-datepicker {
+          font-family: 'Mona Sans', sans-serif !important;
+          border: 1px solid #f0f0f0 !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+        }
+
+        .react-datepicker__header {
+          background: #fafafa !important;
+          border-bottom: 1px solid #f0f0f0 !important;
+          border-radius: 12px 12px 0 0 !important;
+        }
+
+        .react-datepicker__current-month {
+          color: #050817 !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+        }
+
+        .react-datepicker__day-name {
+          color: #6b7280 !important;
+          font-weight: 500 !important;
+        }
+
+        .react-datepicker__day {
+          color: #050817 !important;
+          border-radius: 6px !important;
+        }
+
+        .react-datepicker__day:hover {
+          background: #f0f0f0 !important;
+          color: #050817 !important;
+        }
+
+        .react-datepicker__day--selected {
+          background: #3D52D5 !important;
+          color: white !important;
+        }
+
+        .react-datepicker__day--keyboard-selected {
+          background: #eef0fd !important;
+          color: #3D52D5 !important;
+        }
+
+        .react-datepicker__day--disabled {
+          color: #d9d9d9 !important;
+        }
+
+        .react-datepicker__navigation-icon::before {
+          border-color: #050817 !important;
+        }
+
+        .react-datepicker__year-dropdown,
+        .react-datepicker__month-dropdown {
+          background: white !important;
+          border: 1px solid #f0f0f0 !important;
+          border-radius: 8px !important;
+        }
+
+        .react-datepicker__year-option:hover,
+        .react-datepicker__month-option:hover {
+          background: #f0f0f0 !important;
+        }
+
+        .react-datepicker__year-read-view--down-arrow,
+        .react-datepicker__month-read-view--down-arrow {
+          border-color: #050817 !important;
+        }
+        .react-datepicker-popper {
+          z-index: 9999 !important;
+        }
         @media (max-width: 768px) {
           .registro-grid {
             grid-template-columns: 1fr !important;
@@ -218,21 +346,33 @@ export default function PaginaRegistro() {
                     { required: true, message: 'Requerido' },
                     {
                       validator: (_, value) => {
-                        if (!value) return Promise.reject('Requerido');
-                        const edad = dayjs().diff(value, 'year');
+                        if (!fechaNacimiento) return Promise.reject('Requerido');
+                        const edad = calcularEdad(fechaNacimiento);
                         if (edad < 18) return Promise.reject('Debes tener al menos 18 años');
                         return Promise.resolve();
                       }
                     }
                   ]}
                 >
-                  <DatePicker
-                    style={{ width: '100%', height: 40 }}
-                    placeholder="Seleccionar"
-                    disabledDate={(current) => {
-                      return current && current > dayjs().subtract(18, 'year');
-                    }}
-                  />
+                  <div className="fecha-picker-wrapper">
+                    <DatePicker
+                      selected={fechaNacimiento}
+                      onChange={(date) => {
+                        setFechaNacimiento(date);
+                        form.setFieldValue('fechaNacimiento', date);
+                        form.validateFields(['fechaNacimiento']);
+                      }}
+                      locale="es"
+                      dateFormat="dd/MM/yyyy"
+                      maxDate={fechaMaxima()}
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                      placeholderText="Seleccionar fecha"
+                      yearDropdownItemNumber={100}
+                      scrollableYearDropdown
+                    />
+                  </div>
                 </Form.Item>
 
                 <Form.Item

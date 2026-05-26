@@ -12,12 +12,14 @@
     "@ant-design/cssinjs": "^2.1.2",
     "@ant-design/icons": "^6.2.3",
     "@types/js-cookie": "^3.0.6",
+    "@types/react-datepicker": "^6.2.0",
     "antd": "^6.4.3",
     "axios": "^1.16.1",
     "dayjs": "^1.11.20",
     "js-cookie": "^3.0.7",
     "next": "16.2.6",
     "react": "19.2.4",
+    "react-datepicker": "^9.1.0",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
