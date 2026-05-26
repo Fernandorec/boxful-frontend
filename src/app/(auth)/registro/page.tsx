@@ -1,8 +1,9 @@
 'use client';
-import { Form, Input, Button, Select, DatePicker, message, Modal } from 'antd';
+import { Form, Input, Button, Select, DatePicker, message, Modal, Space } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { AuthService } from '@/services/auth.service';
+import dayjs from 'dayjs';
 
 export default function PaginaRegistro() {
   const router = useRouter();
@@ -113,18 +114,18 @@ export default function PaginaRegistro() {
           fill: #050817 !important;
         }
 
-        .registro-page .ant-input-group-compact {
+        .registro-page .ant-space-compact {
           display: flex !important;
-          height: 40px !important;
+          width: 100% !important;
         }
 
-        .registro-page .ant-input-group-compact .ant-select .ant-select-selector {
+        .registro-page .ant-space-compact .ant-select .ant-select-selector {
           border-radius: 8px 0 0 8px !important;
           height: 40px !important;
           background: #f5f5f5 !important;
         }
 
-        .registro-page .ant-input-group-compact .ant-input {
+        .registro-page .ant-space-compact .ant-input {
           border-radius: 0 8px 8px 0 !important;
           height: 40px !important;
         }
@@ -174,12 +175,28 @@ export default function PaginaRegistro() {
                 className="registro-grid"
                 style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 16, rowGap: 0 }}
               >
-                <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: 'Requerido' }]}>
-                  <Input placeholder="Digita tu nombre" style={{ height: 40 }} />
+                <Form.Item
+                  name="nombre"
+                  label="Nombre"
+                  rules={[
+                    { required: true, message: 'Requerido' },
+                    { max: 20, message: 'Máximo 20 caracteres' },
+                    { pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, message: 'Solo se permiten letras' }
+                  ]}
+                >
+                  <Input placeholder="Digita tu nombre" style={{ height: 40 }} maxLength={20} />
                 </Form.Item>
 
-                <Form.Item name="apellido" label="Apellido" rules={[{ required: true, message: 'Requerido' }]}>
-                  <Input placeholder="Digita tu apellido" style={{ height: 40 }} />
+                <Form.Item
+                  name="apellido"
+                  label="Apellido"
+                  rules={[
+                    { required: true, message: 'Requerido' },
+                    { max: 20, message: 'Máximo 20 caracteres' },
+                    { pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, message: 'Solo se permiten letras' }
+                  ]}
+                >
+                  <Input placeholder="Digita tu apellido" style={{ height: 40 }} maxLength={20} />
                 </Form.Item>
 
                 <Form.Item name="sexo" label="Sexo">
@@ -194,8 +211,28 @@ export default function PaginaRegistro() {
                   </Select>
                 </Form.Item>
 
-                <Form.Item name="fechaNacimiento" label="Fecha de nacimiento">
-                  <DatePicker style={{ width: '100%', height: 40 }} placeholder="Seleccionar" />
+                <Form.Item
+                  name="fechaNacimiento"
+                  label="Fecha de nacimiento"
+                  rules={[
+                    { required: true, message: 'Requerido' },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.reject('Requerido');
+                        const edad = dayjs().diff(value, 'year');
+                        if (edad < 18) return Promise.reject('Debes tener al menos 18 años');
+                        return Promise.resolve();
+                      }
+                    }
+                  ]}
+                >
+                  <DatePicker
+                    style={{ width: '100%', height: 40 }}
+                    placeholder="Seleccionar"
+                    disabledDate={(current) => {
+                      return current && current > dayjs().subtract(18, 'year');
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -207,7 +244,7 @@ export default function PaginaRegistro() {
                 </Form.Item>
 
                 <Form.Item label="Número de WhatsApp">
-                  <Input.Group compact style={{ display: 'flex', height: 40 }}>
+                  <Space.Compact style={{ display: 'flex', width: '100%' }}>
                     <Form.Item name="codigoTelefono" noStyle initialValue="503">
                       <Select
                         style={{ width: 85, height: 40 }}
@@ -221,22 +258,43 @@ export default function PaginaRegistro() {
                     <Form.Item
                       name="telefono"
                       noStyle
-                      rules={[{ required: true, message: 'Requerido' }]}
+                      rules={[
+                        { required: true, message: 'Requerido' },
+                        { len: 8, message: 'El teléfono debe tener exactamente 8 dígitos' },
+                        { pattern: /^[0-9]+$/, message: 'Solo se permiten números' }
+                      ]}
                     >
                       <Input
-                        style={{ flex: 1, height: 40, borderRadius: '0 8px 8px 0' }}
+                        style={{ flex: 1, height: 40 }}
                         placeholder="7777 7777"
+                        maxLength={8}
+                        onKeyDown={(e) => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            e.key !== 'Backspace' &&
+                            e.key !== 'Delete' &&
+                            e.key !== 'Tab' &&
+                            e.key !== 'ArrowLeft' &&
+                            e.key !== 'ArrowRight'
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
                       />
                     </Form.Item>
-                  </Input.Group>
+                  </Space.Compact>
                 </Form.Item>
 
                 <Form.Item
                   name="contrasena"
                   label="Contraseña"
-                  rules={[{ required: true, min: 6, message: 'Mínimo 6 caracteres' }]}
+                  rules={[
+                    { required: true, message: 'Requerido' },
+                    { min: 6, message: 'Mínimo 6 caracteres' },
+                    { max: 30, message: 'Máximo 30 caracteres' }
+                  ]}
                 >
-                  <Input.Password style={{ height: 40 }} placeholder="Digitar contraseña" />
+                  <Input.Password style={{ height: 40 }} placeholder="Digitar contraseña" maxLength={30} />
                 </Form.Item>
 
                 <Form.Item
@@ -255,7 +313,7 @@ export default function PaginaRegistro() {
                     }),
                   ]}
                 >
-                  <Input.Password style={{ height: 40 }} placeholder="Digitar contraseña" />
+                  <Input.Password style={{ height: 40 }} placeholder="Digitar contraseña" maxLength={30} />
                 </Form.Item>
               </div>
 
