@@ -80,10 +80,41 @@ export default function PaginaRegistro() {
     return fecha;
   };
 
+  const features = [
+    {
+      titulo: 'Envíos same-day & next-day',
+      desc: 'Misma área metropolitana al instante. Nacional en 24 horas.',
+      icono: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L4.5 12.5h6L11 22l8.5-10.5h-6L13 2z" fill="white" />
+        </svg>
+      ),
+    },
+    {
+      titulo: 'Sin contratos largos',
+      desc: 'Empieza cuando quieras. Pausa cuando necesites. Sin letra pequeña.',
+      icono: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      titulo: 'Cobertura en LatAm',
+      desc: 'El Salvador, Guatemala, Honduras, Costa Rica y Nicaragua.',
+      icono: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2" />
+          <path d="M3 12h18M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1-4-9 14 14 0 0 1 4-9z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700;800;900&display=swap');
 
         .registro-page * {
           font-family: 'Mona Sans', sans-serif !important;
@@ -222,13 +253,13 @@ export default function PaginaRegistro() {
         }
 
         .react-datepicker__day--selected {
-          background: #3D52D5 !important;
+          background: #fc4a3e !important;
           color: white !important;
         }
 
         .react-datepicker__day--keyboard-selected {
-          background: #eef0fd !important;
-          color: #3D52D5 !important;
+          background: #fff0ee !important;
+          color: #fc4a3e !important;
         }
 
         .react-datepicker__day--disabled {
@@ -258,6 +289,30 @@ export default function PaginaRegistro() {
         .react-datepicker-popper {
           z-index: 9999 !important;
         }
+
+        /* Logo de fondo, marca de agua */
+        .registro-logo-watermark {
+          position: absolute;
+          right: -80px;
+          bottom: -100px;
+          width: 600px;
+          height: auto;
+          opacity: 0.08;
+          filter: brightness(0) invert(1);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        /* Feature card */
+        .feature-card {
+          transition: all 0.25s ease;
+        }
+        .feature-card:hover {
+          background: rgba(255,255,255,0.18) !important;
+          border-color: rgba(255,255,255,0.35) !important;
+          transform: translateX(4px);
+        }
+
         @media (max-width: 768px) {
           .registro-grid {
             grid-template-columns: 1fr !important;
@@ -463,8 +518,8 @@ export default function PaginaRegistro() {
                 size="large"
                 block
                 style={{
-                  background: '#3D52D5',
-                  borderColor: '#3D52D5',
+                  background: '#fc4a3e',
+                  borderColor: '#fc4a3e',
                   marginTop: 8,
                   height: 44,
                   fontSize: 15,
@@ -485,7 +540,131 @@ export default function PaginaRegistro() {
           </div>
         </div>
 
-        <div className="registro-panel-derecho" style={{ flex: 1, background: '#f0f0f0' }} />
+        {/* Panel derecho — naranja Boxful con feature cards */}
+        <div
+          className="registro-panel-derecho"
+          style={{
+            flex: 1,
+            background: 'linear-gradient(160deg, #ff6b5e 0%, #fc4a3e 60%, #e63d31 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '64px',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Marca de agua */}
+          <img src="/login.png" alt="" className="registro-logo-watermark" />
+
+          {/* Marca arriba izquierda */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            <img
+              src="/login.png"
+              alt="Boxful"
+              style={{
+                width: 40,
+                height: 'auto',
+                filter: 'brightness(0) invert(1)',
+              }}
+            />
+            <span
+              style={{
+                fontSize: 26,
+                fontWeight: 800,
+                color: 'white',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              boxful
+            </span>
+          </div>
+
+          {/* Centro: hero + feature cards */}
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 36 }}>
+            {/* Hero */}
+            <h2
+              style={{
+                color: 'white',
+                fontSize: 'clamp(28px, 3vw, 42px)',
+                fontWeight: 700,
+                lineHeight: 1.15,
+                letterSpacing: '-0.03em',
+                margin: 0,
+                maxWidth: 500,
+              }}
+            >
+              Todo lo que tu negocio necesita para enviar{' '}
+              <span style={{ color: '#0a0a0a', textShadow: '4px 4px 0 rgba(255,255,255,0.25)' }}>rápido</span>
+            </h2>
+
+            {/* Feature cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {features.map((f, i) => (
+                <div
+                  key={i}
+                  className="feature-card"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    padding: '14px 18px',
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 10,
+                      background: 'rgba(255,255,255,0.18)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {f.icono}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 2 }}>
+                      {f.titulo}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+                      {f.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pie sutil */}
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: 'rgba(255,255,255,0.65)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            Boxful · Envíos ultra-rápidos para LatAm
+          </div>
+        </div>
 
         <Modal
           open={modalVisible}
@@ -493,7 +672,7 @@ export default function PaginaRegistro() {
           onOk={confirmarRegistro}
           okText="Aceptar"
           cancelText="Cancelar"
-          okButtonProps={{ style: { background: '#3D52D5', borderColor: '#3D52D5' } }}
+          okButtonProps={{ style: { background: '#fc4a3e', borderColor: '#fc4a3e' } }}
           title={null}
           centered
         >

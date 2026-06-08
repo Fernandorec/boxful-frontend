@@ -19,7 +19,7 @@ export default function PaginaLogin() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mona+Sans:wght@400;500;600;700;800;900&display=swap');
 
         .login-page * {
           font-family: 'Mona Sans', sans-serif !important;
@@ -68,6 +68,19 @@ export default function PaginaLogin() {
           stroke: #050817 !important;
           stroke-width: 55 !important;
           fill: #050817 !important;
+        }
+
+        /* Logo de fondo, marca de agua */
+        .logo-watermark {
+          position: absolute;
+          right: -80px;
+          bottom: -100px;
+          width: 600px;
+          height: auto;
+          opacity: 0.08;
+          filter: brightness(0) invert(1);
+          pointer-events: none;
+          z-index: 0;
         }
 
         @media (max-width: 768px) {
@@ -126,8 +139,8 @@ export default function PaginaLogin() {
                 size="large"
                 block
                 style={{
-                  background: '#3D52D5',
-                  borderColor: '#3D52D5',
+                  background: '#fc4a3e',
+                  borderColor: '#fc4a3e',
                   marginTop: 24,
                   height: 44,
                   fontSize: 15,
@@ -148,11 +161,116 @@ export default function PaginaLogin() {
           </div>
         </div>
 
-        {/* Panel derecho — vacío */}
+        {/* Panel derecho — brand poster */}
         <div
           className="login-panel-derecho"
-          style={{ flex: 1, background: '#f0f0f0' }}
-        />
+          style={{
+            flex: 1,
+            background: 'linear-gradient(160deg, #ff6b5e 0%, #fc4a3e 60%, #e63d31 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '64px',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Marca de agua del logo */}
+          <img src="/login.png" alt="" className="logo-watermark" />
+
+          {/* Marca arriba izquierda */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            <img
+              src="/login.png"
+              alt="Boxful"
+              style={{
+                width: 40,
+                height: 'auto',
+                filter: 'brightness(0) invert(1)',
+              }}
+            />
+            <span
+              style={{
+                fontSize: 26,
+                fontWeight: 800,
+                color: 'white',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              boxful
+            </span>
+          </div>
+
+          {/* Slogan centrado verticalmente */}
+          <h2
+            style={{
+              color: 'white',
+              fontSize: 'clamp(32px, 3.6vw, 52px)',
+              fontWeight: 600,
+              lineHeight: 1.1,
+              letterSpacing: '-0.03em',
+              margin: 0,
+              maxWidth: 560,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            Hacemos que el{' '}
+            <span style={{ fontWeight: 900, whiteSpace: 'nowrap', color: '#111', textShadow: '4px 4px 0 rgba(255,255,255,0.3)' }}>e-commerce</span>{' '}
+            sea fácil y accesible para todos
+          </h2>
+
+          {/* Pie con stats inline — centrados */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 40,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                100<span style={{ fontSize: 22 }}>%</span>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: 6 }}>
+                Efectividad<br />en envíos
+              </div>
+            </div>
+
+            <div style={{ width: 1, height: 56, background: 'rgba(255,255,255,0.25)' }} />
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                24<span style={{ fontSize: 22 }}>h</span>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: 6 }}>
+                Entrega<br />nacional
+              </div>
+            </div>
+
+            <div style={{ width: 1, height: 56, background: 'rgba(255,255,255,0.25)' }} />
+
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 32, fontWeight: 900, color: 'white', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                LatAm
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.05em', textTransform: 'uppercase', marginTop: 6 }}>
+                Cobertura<br />regional
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

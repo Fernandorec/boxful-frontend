@@ -77,14 +77,10 @@ export default function PaginaNuevaOrden() {
     if (camposNumericos.includes(campo)) {
       if (valor === null || valor === undefined || valor === '') {
         nuevosErrores[index][campo] = 'Requerido';
-      } else if (valor < 0) {
-        nuevosErrores[index][campo] = 'Ingresa una cantidad válida';
-      } else if (['largo', 'alto', 'ancho'].includes(campo) && valor < 50) {
-        nuevosErrores[index][campo] = 'El mínimo es 50 cm';
+      } else if (valor <= 0) {
+        nuevosErrores[index][campo] = 'Debe ser mayor a 0';
       } else if (['largo', 'alto', 'ancho'].includes(campo) && valor > 10000) {
         nuevosErrores[index][campo] = 'El máximo es 10,000 cm';
-      } else if (campo === 'pesoLibras' && valor < 50) {
-        nuevosErrores[index][campo] = 'El mínimo es 50 lbs';
       } else if (campo === 'pesoLibras' && valor > 10000) {
         nuevosErrores[index][campo] = 'El máximo es 10,000 lbs';
       } else {
@@ -101,19 +97,19 @@ export default function PaginaNuevaOrden() {
     const errores: any = {};
 
     if (!p.largo) errores.largo = 'Requerido';
-    else if (p.largo < 50) errores.largo = 'El mínimo es 50 cm';
+    else if (p.largo <= 0) errores.largo = 'Debe ser mayor a 0';
     else if (p.largo > 10000) errores.largo = 'El máximo es 10,000 cm';
 
     if (!p.alto) errores.alto = 'Requerido';
-    else if (p.alto < 50) errores.alto = 'El mínimo es 50 cm';
+    else if (p.alto <= 0) errores.alto = 'Debe ser mayor a 0';
     else if (p.alto > 10000) errores.alto = 'El máximo es 10,000 cm';
 
     if (!p.ancho) errores.ancho = 'Requerido';
-    else if (p.ancho < 50) errores.ancho = 'El mínimo es 50 cm';
+    else if (p.ancho <= 0) errores.ancho = 'Debe ser mayor a 0';
     else if (p.ancho > 10000) errores.ancho = 'El máximo es 10,000 cm';
 
     if (!p.pesoLibras) errores.pesoLibras = 'Requerido';
-    else if (p.pesoLibras < 50) errores.pesoLibras = 'El mínimo es 50 lbs';
+    else if (p.pesoLibras <= 0) errores.pesoLibras = 'Debe ser mayor a 0';
     else if (p.pesoLibras > 10000) errores.pesoLibras = 'El máximo es 10,000 lbs';
 
     return errores;
@@ -546,7 +542,7 @@ export default function PaginaNuevaOrden() {
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
                           suffix="cm"
-                          placeholder="mín. 50"
+                          placeholder="Ej. 15"
                           status={erroresPaquetes[index]?.largo ? 'error' : ''}
                         />
                         {erroresPaquetes[index]?.largo && (
@@ -563,7 +559,7 @@ export default function PaginaNuevaOrden() {
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
                           suffix="cm"
-                          placeholder="mín. 50"
+                          placeholder="Ej. 15"
                           status={erroresPaquetes[index]?.alto ? 'error' : ''}
                         />
                         {erroresPaquetes[index]?.alto && (
@@ -580,7 +576,7 @@ export default function PaginaNuevaOrden() {
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
                           suffix="cm"
-                          placeholder="mín. 50"
+                          placeholder="Ej. 15"
                           status={erroresPaquetes[index]?.ancho ? 'error' : ''}
                         />
                         {erroresPaquetes[index]?.ancho && (
@@ -597,7 +593,7 @@ export default function PaginaNuevaOrden() {
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
                           suffix="lbs"
-                          placeholder="mín. 50"
+                          placeholder="Ej. 3"
                           status={erroresPaquetes[index]?.pesoLibras ? 'error' : ''}
                         />
                         {erroresPaquetes[index]?.pesoLibras && (
