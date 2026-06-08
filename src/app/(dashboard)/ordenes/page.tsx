@@ -168,8 +168,8 @@ export default function PaginaHistorial() {
             type="primary"
             onClick={alBuscar}
             style={{
-              background: '#3D52D5',
-              borderColor: '#3D52D5',
+              background: '#ff6036',
+              borderColor: '#ff6036',
               height: 40,
               paddingInline: 24,
               borderRadius: 8,
