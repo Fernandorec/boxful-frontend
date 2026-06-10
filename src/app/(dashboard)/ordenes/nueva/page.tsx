@@ -77,10 +77,12 @@ export default function PaginaNuevaOrden() {
     if (camposNumericos.includes(campo)) {
       if (valor === null || valor === undefined || valor === '') {
         nuevosErrores[index][campo] = 'Requerido';
-      } else if (valor <= 0) {
-        nuevosErrores[index][campo] = 'Debe ser mayor a 0';
+      } else if (['largo', 'alto', 'ancho'].includes(campo) && valor < 5) {
+      nuevosErrores[index][campo] = 'El mínimo es 5 cm';
       } else if (['largo', 'alto', 'ancho'].includes(campo) && valor > 10000) {
         nuevosErrores[index][campo] = 'El máximo es 10,000 cm';
+      } else if (campo === 'pesoLibras' && valor <= 0) {
+        nuevosErrores[index][campo] = 'Debe ser mayor a 0';
       } else if (campo === 'pesoLibras' && valor > 10000) {
         nuevosErrores[index][campo] = 'El máximo es 10,000 lbs';
       } else {
@@ -95,17 +97,16 @@ export default function PaginaNuevaOrden() {
 
   const nuevosErrores = paquetes.map((p) => {
     const errores: any = {};
-
     if (!p.largo) errores.largo = 'Requerido';
-    else if (p.largo <= 0) errores.largo = 'Debe ser mayor a 0';
+    else if (p.largo < 5) errores.largo = 'El mínimo es 5 cm';
     else if (p.largo > 10000) errores.largo = 'El máximo es 10,000 cm';
 
     if (!p.alto) errores.alto = 'Requerido';
-    else if (p.alto <= 0) errores.alto = 'Debe ser mayor a 0';
+    else if (p.alto < 5) errores.alto = 'El mínimo es 5 cm';
     else if (p.alto > 10000) errores.alto = 'El máximo es 10,000 cm';
 
     if (!p.ancho) errores.ancho = 'Requerido';
-    else if (p.ancho <= 0) errores.ancho = 'Debe ser mayor a 0';
+    else if (p.ancho < 5) errores.ancho = 'El mínimo es 5 cm';
     else if (p.ancho > 10000) errores.ancho = 'El máximo es 10,000 cm';
 
     if (!p.pesoLibras) errores.pesoLibras = 'Requerido';
@@ -366,6 +367,7 @@ export default function PaginaNuevaOrden() {
                         <Input
                           style={{ flex: 1, height: 40 }}
                           placeholder="7777 7777"
+                          maxLength={8}
                           onKeyDown={soloNumeros}
                         />
                       </Form.Item>
@@ -537,7 +539,8 @@ export default function PaginaNuevaOrden() {
                           value={paquete.largo || ''}
                           onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9.]/g, '');
-                            actualizarPaquete(index, 'largo', val === '' ? null : parseFloat(val));
+                            const num = val === '' ? null : Math.min(parseFloat(val), 10000);
+                            actualizarPaquete(index, 'largo', num);
                           }}
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
@@ -554,7 +557,8 @@ export default function PaginaNuevaOrden() {
                           value={paquete.alto || ''}
                           onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9.]/g, '');
-                            actualizarPaquete(index, 'alto', val === '' ? null : parseFloat(val));
+                            const num = val === '' ? null : Math.min(parseFloat(val), 10000);
+                            actualizarPaquete(index, 'alto', num);
                           }}
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
@@ -568,10 +572,10 @@ export default function PaginaNuevaOrden() {
                       </div>
                       <div>
                         <Input
-                          value={paquete.ancho || ''}
                           onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9.]/g, '');
-                            actualizarPaquete(index, 'ancho', val === '' ? null : parseFloat(val));
+                            const num = val === '' ? null : Math.min(parseFloat(val), 10000);
+                            actualizarPaquete(index, 'ancho', num);
                           }}
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}
@@ -588,7 +592,8 @@ export default function PaginaNuevaOrden() {
                           value={paquete.pesoLibras || ''}
                           onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9.]/g, '');
-                            actualizarPaquete(index, 'pesoLibras', val === '' ? null : parseFloat(val));
+                            const num = val === '' ? null : Math.min(parseFloat(val), 10000);
+                            actualizarPaquete(index, 'pesoLibras', num);
                           }}
                           onKeyDown={soloNumeros}
                           style={{ width: '100%' }}

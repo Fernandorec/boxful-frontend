@@ -3,7 +3,7 @@
 Frontend de la aplicación Boxful — envíos ultra-rápidos para LatAm.
 
 ## Tecnologías
-- Next.js 16
+- Next.js 15
 - React
 - Ant Design
 - Axios
@@ -18,20 +18,28 @@ Frontend de la aplicación Boxful — envíos ultra-rápidos para LatAm.
 
 1. Clona el repositorio:
 
+```bash
 git clone https://github.com/Fernandorec/boxful-frontend.git
 cd boxful-frontend
+```
 
 2. Instala las dependencias:
 
+```bash
 npm install
+```
 
 3. Crea el archivo `.env.local` en la raíz con estas variables:
 
+```
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
 
 4. Inicia el servidor de desarrollo:
 
+```bash
 npm run dev
+```
 
 La aplicación corre en http://localhost:3000
 
@@ -48,7 +56,7 @@ La aplicación corre en http://localhost:3000
 - Registro e inicio de sesión con JWT
 - Validaciones en registro: nombre sin caracteres especiales, edad mínima 18 años, teléfono exactamente 8 dígitos, contraseña máximo 30 caracteres
 - Crear órdenes con múltiples paquetes
-- Validaciones en paquetes: dimensiones mínimo 50 cm, máximo 10,000 cm, solo números
+- Validaciones en paquetes: dimensiones mínimo 5 cm, máximo 10,000 cm, peso mínimo mayor a 0, máximo 10,000 lbs, solo números
 - Historial de órdenes con filtros por fecha
 - Exportar órdenes a CSV con todos los detalles
 - Soporte para órdenes COD (cobro contra entrega)
@@ -70,3 +78,5 @@ La aplicación corre en http://localhost:3000
 - Botón de limpiar datos en formulario de orden
 - Validación de fechas futuras en órdenes
 - Validación de monto COD con máximo 2 decimales
+- Límite automático en dimensiones y peso: si se ingresa un valor mayor a 10,000 se recorta automáticamente
+- Teléfono del destinatario limitado a exactamente 8 dígitos
